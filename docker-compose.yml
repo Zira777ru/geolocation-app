@@ -1,0 +1,11 @@
+# docker-compose.yml
+version: '3'
+services:
+  mygeo:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: mygeo
+    restart: always
+    ports:
+      - 7777:7777

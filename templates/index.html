@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Geolocation App</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f2f2f2;
+        }
+
+        h1 {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .map-container {
+            width: 100%;
+            max-width: 800px;
+            height: 500px;
+            margin: 0 auto;
+            background-color: #fff;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        #map {
+            height: 100%;
+        }
+
+        .result-container {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        .result-text {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .result-item {
+            margin-bottom: 5px;
+        }
+    </style>
+    <script src="https://api-maps.yandex.ru/2.1/?apikey=a9009ca1-bc6d-4acb-b3e5-a970381522b0&lang=ru_RU"></script>
+    <script>
+        function handleSuccess(position) {
+            const latitude = position.coords.latitude;
+            const longitude = position.coords.longitude;
+
+            fetch('/location', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ latitude, longitude })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Обработка полученных данных
+                if (data.error) {
+                    console.error('Error:', data.error);
+                    return;
+                }
+
+                const { latitude, longitude, city, country, address, ipAddress } = data;
+                const resultContainer = document.getElementById('result');
+                resultContainer.innerHTML = '';
+
+                const resultText = document.createElement('p');
+                resultText.classList.add('result-text');
+                resultText.textContent = 'Geolocation Result:';
+                resultContainer.appendChild(resultText);
+
+                const latitudeItem = createResultItem('Latitude', latitude);
+                resultContainer.appendChild(latitudeItem);
+
+                const longitudeItem = createResultItem('Longitude', longitude);
+                resultContainer.appendChild(longitudeItem);
+
+                const cityItem = createResultItem('City', city);
+                resultContainer.appendChild(cityItem);
+
+                const countryItem = createResultItem('Country', country);
+                resultContainer.appendChild(countryItem);
+
+                const addressItem = createResultItem('Address', address);
+                resultContainer.appendChild(addressItem);
+
+                const ipAddressItem = createResultItem('IP Address', ipAddress);
+                resultContainer.appendChild(ipAddressItem);
+
+                // Отображение карты
+                ymaps.ready(function() {
+                    const mapContainer = document.getElementById('map');
+                    const myMap = new ymaps.Map(mapContainer, {
+                        center: [latitude, longitude],
+                        zoom: 12
+                    });
+                    const myPlacemark = new ymaps.Placemark([latitude, longitude], {
+                        hintContent: address
+                    });
+                    myMap.geoObjects.add(myPlacemark);
+                });
+            })
+            .catch(error => {
+                // Обработка ошибки
+                console.error('Error:', error);
+            });
+        }
+
+        function handleError(error) {
+            // Обработка ошибки
+            console.error('Error:', error);
+        }
+
+        function getLocation() {
+            if (navigator.geolocation) {
+                navigator.geolocation.getCurrentPosition(handleSuccess, handleError);
+            } else {
+                // Браузер не поддерживает геолокацию
+                console.error('Geolocation is not supported by this browser.');
+            }
+        }
+
+        function createResultItem(label, value) {
+            const item = document.createElement('p');
+            item.classList.add('result-item');
+            item.textContent = `${label}: ${value}`;
+            return item;
+        }
+    </script>
+</head>
+<body>
+    <h1>Geolocation App</h1>
+    <div class="map-container">
+        <div id="map"></div>
+    </div>
+    <div class="result-container">
+        <button onclick="getLocation()">Get Location</button>
+        <div id="result"></div>
+    </div>
+</body>
+</html>
