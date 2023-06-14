@@ -15,7 +15,7 @@ class LocationData(BaseModel):
 async def index(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
-@app.post("/location")
+@app.post("/mygeo/location")
 async def save_location(request: Request, location_data: LocationData):
     latitude = location_data.latitude
     longitude = location_data.longitude
