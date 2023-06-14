@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 7777
 
-CMD ["uvicorn", "main:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "7777"]
+CMD ["uvicorn", "app:app", "--proxy-headers", "--host", "0.0.0.0", "--port", "7777"]
